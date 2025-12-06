@@ -1,3 +1,5 @@
+/* ---------- Theme variables ---------- */
+
 :root {
   /* dark theme defaults */
   --bg-body: radial-gradient(circle at top left, #1e3a8a 0, #020617 45%, #000000 100%);
@@ -19,6 +21,7 @@
 /* light theme overrides */
 :root[data-theme='light'] {
   --bg-body: #f9fafb;
+  --bg: #f9fafb;
   --bg-elevated: #ffffff;
   --bg-soft: #f3f4f6;
   --text-main: #020617;
@@ -26,6 +29,7 @@
   --border-subtle: rgba(148, 163, 184, 0.55);
 }
 
+/* ---------- Resets ---------- */
 
 *,
 *::before,
@@ -46,7 +50,7 @@ body {
   color: var(--text-main);
 }
 
-/* Layout */
+/* ---------- Header ---------- */
 
 .site-header {
   position: sticky;
@@ -56,9 +60,22 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0.9rem 1.25rem;
-  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.8));
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 23, 42, 0.95),
+    rgba(15, 23, 42, 0.8)
+  );
   border-bottom: 1px solid rgba(148, 163, 184, 0.25);
   backdrop-filter: blur(14px);
+}
+
+:root[data-theme='light'] .site-header {
+  background: linear-gradient(
+    to bottom,
+    rgba(243, 244, 246, 0.98),
+    rgba(243, 244, 246, 0.92)
+  );
+  border-bottom-color: rgba(148, 163, 184, 0.45);
 }
 
 .site-header__brand {
@@ -96,7 +113,11 @@ body {
   cursor: pointer;
 }
 
-/* Main layout wrappers */
+:root[data-theme='light'] .theme-toggle {
+  background: #ffffff;
+}
+
+/* ---------- Main layout wrappers ---------- */
 
 .page-home__main,
 .page-player__main,
@@ -108,7 +129,7 @@ body {
   padding: 1.5rem 1.1rem 2.5rem;
 }
 
-/* Hero */
+/* ---------- Hero ---------- */
 
 .hero {
   padding: 1.5rem 1rem 1rem;
@@ -124,7 +145,7 @@ body {
   color: var(--text-muted);
 }
 
-/* Sections */
+/* ---------- Sections ---------- */
 
 .home-section,
 .player-section,
@@ -139,7 +160,7 @@ body {
   margin-bottom: 0.75rem;
 }
 
-/* Cards */
+/* ---------- Cards ---------- */
 
 .card-grid {
   display: grid;
@@ -150,7 +171,7 @@ body {
 .card {
   display: flex;
   flex-direction: column;
-  background: rgba(15, 23, 42, 0.92);
+  background: var(--bg-elevated);
   border-radius: var(--radius-lg);
   padding: 0.75rem;
   border: 1px solid rgba(148, 163, 184, 0.35);
@@ -164,10 +185,18 @@ body {
     background var(--transition-fast);
 }
 
+:root[data-theme='light'] .card {
+  box-shadow: 0 15px 30px rgba(148, 163, 184, 0.25);
+}
+
 .card:hover {
   transform: translateY(-3px);
   border-color: var(--accent);
-  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.25), rgba(15, 23, 42, 0.98));
+  background: radial-gradient(
+    circle at top left,
+    rgba(37, 99, 235, 0.25),
+    var(--bg-elevated)
+  );
   box-shadow: 0 24px 60px rgba(15, 23, 42, 0.95);
 }
 
@@ -200,14 +229,18 @@ body {
   color: var(--text-muted);
 }
 
-/* Tables */
+/* ---------- Tables ---------- */
 
 .table-wrapper {
   border-radius: var(--radius-lg);
   border: 1px solid rgba(148, 163, 184, 0.3);
   overflow: hidden;
-  background: rgba(15, 23, 42, 0.96);
+  background: var(--bg-elevated);
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.8);
+}
+
+:root[data-theme='light'] .table-wrapper {
+  box-shadow: 0 14px 30px rgba(148, 163, 184, 0.3);
 }
 
 .table-wrapper--scroll {
@@ -221,7 +254,7 @@ body {
 }
 
 .stat-table thead {
-  background: rgba(15, 23, 42, 0.97);
+  background: var(--bg-soft);
 }
 
 .stat-table th,
@@ -237,18 +270,18 @@ body {
 }
 
 .stat-table tbody tr:nth-child(odd) {
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--bg-elevated);
 }
 
 .stat-table tbody tr:nth-child(even) {
-  background: rgba(15, 23, 42, 0.95);
+  background: var(--bg-soft);
 }
 
 .stat-table tbody tr:hover {
-  background: rgba(37, 99, 235, 0.16);
+  background: var(--accent-soft);
 }
 
-/* Player hero */
+/* ---------- Player hero ---------- */
 
 .player-hero {
   display: flex;
@@ -296,7 +329,7 @@ body {
   font-size: 0.9rem;
 }
 
-/* Player controls */
+/* ---------- Player controls ---------- */
 
 .player-controls {
   display: flex;
@@ -316,7 +349,7 @@ body {
 .player-controls__row select {
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.6);
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--bg-elevated);
   color: var(--text-main);
   padding: 0.25rem 0.6rem;
 }
@@ -324,7 +357,7 @@ body {
 .player-controls__tabs {
   display: inline-flex;
   gap: 0.3rem;
-  background: rgba(15, 23, 42, 0.95);
+  background: var(--bg-elevated);
   border-radius: 999px;
   padding: 0.15rem;
   border: 1px solid rgba(148, 163, 184, 0.5);
@@ -345,7 +378,7 @@ body {
   color: var(--accent);
 }
 
-/* Team hero */
+/* ---------- Team hero ---------- */
 
 .team-hero__card {
   display: flex;
@@ -381,7 +414,7 @@ body {
   font-size: 0.85rem;
 }
 
-/* Team controls */
+/* ---------- Team controls ---------- */
 
 .team-controls__row {
   margin-top: 0.5rem;
@@ -393,12 +426,12 @@ body {
 .team-controls__row select {
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.6);
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--bg-elevated);
   color: var(--text-main);
   padding: 0.25rem 0.6rem;
 }
 
-/* Season highs */
+/* ---------- Season highs ---------- */
 
 .season-highs-grid {
   display: flex;
@@ -459,7 +492,7 @@ body {
   color: var(--text-muted);
 }
 
-/* Page header */
+/* ---------- Page header ---------- */
 
 .page-header {
   margin: 1rem 0 0.75rem;
@@ -480,12 +513,12 @@ body {
 .page-header__controls select {
   border-radius: 999px;
   border: 1px solid rgba(148, 163, 184, 0.6);
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--bg-elevated);
   color: var(--text-main);
   padding: 0.25rem 0.6rem;
 }
 
-/* Footer */
+/* ---------- Footer ---------- */
 
 .site-footer {
   border-top: 1px solid rgba(148, 163, 184, 0.2);
@@ -495,7 +528,7 @@ body {
   text-align: center;
 }
 
-/* Links */
+/* ---------- Links ---------- */
 
 a {
   color: #93c5fd;

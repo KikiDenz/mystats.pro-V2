@@ -1,4 +1,6 @@
-// --- number + CSV helpers ---
+// js/app.js
+
+// ---------- Number + CSV helpers ----------
 
 export function toNum(v) {
   const n = parseFloat(v);
@@ -21,11 +23,11 @@ export function fmtPct(made, att) {
 export function parseCsv(text) {
   const lines = text.trim().split(/\r?\n/);
   if (!lines.length) return [];
-  const headers = lines[0].split(",").map(h => h.trim());
+  const headers = lines[0].split(",").map((h) => h.trim());
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
     if (!lines[i].trim()) continue;
-    const cols = lines[i].split(",").map(c => c.trim());
+    const cols = lines[i].split(",").map((c) => c.trim());
     const row = {};
     headers.forEach((h, idx) => {
       row[h] = cols[idx] ?? "";
@@ -35,7 +37,7 @@ export function parseCsv(text) {
   return rows;
 }
 
-// Map date string -> year + "Season" (Summer / Autumn / Winter / Spring)
+// Map date string -> year + "Season" label (Summer / Autumn / Winter / Spring)
 export function getYearAndSeasonLabel(dateStr) {
   if (!dateStr) return { year: null, seasonLabel: null };
   let d;
@@ -52,9 +54,9 @@ export function getYearAndSeasonLabel(dateStr) {
   if (Number.isNaN(d.getTime())) {
     return { year: null, seasonLabel: null };
   }
+
   const year = d.getFullYear();
   const month = d.getMonth() + 1;
-
   let season = "Summer";
   if (month >= 3 && month <= 5) season = "Autumn";
   else if (month >= 6 && month <= 8) season = "Winter";
@@ -63,11 +65,11 @@ export function getYearAndSeasonLabel(dateStr) {
   return { year, seasonLabel: `${year} ${season}` };
 }
 
-// --- theme handling ---
+// ---------- Theme handling ----------
 
 function applyTheme() {
   const stored = localStorage.getItem("mystats_theme");
-  const theme = stored === "light" ? "light" : "dark";
+  const theme = stored === "light" ? "light" : "dark"; // default dark
 
   document.documentElement.dataset.theme = theme;
 
@@ -77,21 +79,26 @@ function applyTheme() {
   }
 }
 
-export function setupThemeToggle() {
-  applyTheme();
+function initThemeToggle() {
   const btn = document.querySelector("[data-theme-toggle]");
   if (!btn) return;
 
   btn.addEventListener("click", () => {
-    const current = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+    const current =
+      document.documentElement.dataset.theme === "light" ? "dark" : "light";
     localStorage.setItem("mystats_theme", current);
     applyTheme();
   });
 }
 
-// Auto-apply theme on load (so even pages that don't call setupThemeToggle get the right theme)
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", applyTheme);
-} else {
+// Automatically wire theme on every page that includes app.js
+function bootTheme() {
   applyTheme();
+  initThemeToggle();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", bootTheme);
+} else {
+  bootTheme();
 }
