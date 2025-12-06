@@ -1,116 +1,130 @@
 // js/app.js
+// Global helpers + theme handling for mystats.pro (non-module version)
 
-// ---------- Number + CSV helpers ----------
+(function (window, document) {
+  const MYSTATS = window.MYSTATS || {};
 
-export function toNum(v) {
-  const n = parseFloat(v);
-  return Number.isFinite(n) ? n : 0;
-}
+  /********************************************************************
+   * Small utility helpers
+   ********************************************************************/
 
-export function fmtNumber(v, decimals = 1) {
-  if (!Number.isFinite(v)) return "0.0";
-  return v.toFixed(decimals);
-}
+  // Safe number parse
+  function toNumber(value) {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === "number") return value;
+    const v = String(value).trim();
+    if (!v) return 0;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
 
-export function fmtPct(made, att) {
-  const m = toNum(made);
-  const a = toNum(att);
-  if (!a) return "—";
-  return (100 * m / a).toFixed(1);
-}
+  // Basic CSV parser (no quoted commas in your sheets, so we can keep it simple)
+  function parseCsv(text) {
+    if (!text) return [];
+    const lines = text.trim().split(/\r?\n/);
+    if (!lines.length) return [];
+    const headers = lines[0].split(",").map((h) => h.trim());
 
-// Very small CSV parser for our simple, comma-separated data
-export function parseCsv(text) {
-  const lines = text.trim().split(/\r?\n/);
-  if (!lines.length) return [];
-
-  // Header row
-  const rawHeaders = lines[0].split(",");
-  const normalise = (h) => h.trim().toLowerCase().replace(/\s+/g, "");
-  const headers = rawHeaders.map((h) => normalise(h));
-
-  const rows = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i];
-    if (!line.trim()) continue;
-
-    const cols = line.split(",").map((c) => c.trim());
-    const row = {};
-
-    headers.forEach((key, idx) => {
-      row[key] = cols[idx] ?? "";
+    return lines.slice(1).map((line) => {
+      const cols = line.split(",");
+      const row = {};
+      headers.forEach((h, i) => {
+        row[h] = (cols[i] || "").trim();
+      });
+      return row;
     });
-
-    rows.push(row);
   }
 
-  return rows;
-}
-
-// Map date string -> year + "Season" label (Summer / Autumn / Winter / Spring)
-export function getYearAndSeasonLabel(dateStr) {
-  if (!dateStr) return { year: null, seasonLabel: null };
-
-  let d;
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    d = new Date(dateStr + "T00:00:00");
-  } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateStr)) {
-    const [dd, mm, yyyy] = dateStr.split("/").map(Number);
-    d = new Date(yyyy, mm - 1, dd);
-  } else {
-    d = new Date(dateStr);
+  function groupBy(items, keyFn) {
+    const map = {};
+    for (const item of items) {
+      const key = keyFn(item);
+      if (!map[key]) map[key] = [];
+      map[key].push(item);
+    }
+    return map;
   }
 
-  if (Number.isNaN(d.getTime())) {
-    return { year: null, seasonLabel: null };
+  function sumBy(items, valueFn) {
+    let total = 0;
+    for (const item of items) {
+      total += toNumber(valueFn(item));
+    }
+    return total;
   }
 
-  const year = d.getFullYear();
-  const month = d.getMonth() + 1;
-
-  let season = "Summer";
-  if (month >= 3 && month <= 5) season = "Autumn";
-  else if (month >= 6 && month <= 8) season = "Winter";
-  else if (month >= 9 && month <= 11) season = "Spring";
-
-  return { year, seasonLabel: `${year} ${season}` };
-}
-
-// ---------- Theme handling ----------
-
-function applyTheme() {
-  const stored = localStorage.getItem("mystats_theme");
-  const theme = stored === "light" ? "light" : "dark"; // default dark
-  document.documentElement.dataset.theme = theme;
-
-  const btn = document.querySelector("[data-theme-toggle]");
-  if (btn) {
-    btn.textContent = theme === "light" ? "☾" : "☀";
+  function avgBy(items, valueFn) {
+    if (!items.length) return 0;
+    return sumBy(items, valueFn) / items.length;
   }
-}
 
-function initThemeToggle() {
-  const btn = document.querySelector("[data-theme-toggle]");
-  if (!btn) return;
+  function slugify(name) {
+    return String(name || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
 
-  btn.addEventListener("click", () => {
-    const current =
-      document.documentElement.dataset.theme === "light" ? "dark" : "light";
-    localStorage.setItem("mystats_theme", current);
-    applyTheme();
+  /********************************************************************
+   * Theme handling
+   ********************************************************************/
+
+  const THEME_KEY = "mystats-theme";
+
+  function applyTheme(theme) {
+    const root = document.documentElement;
+    if (theme === "light") {
+      root.classList.remove("dark");
+      root.classList.add("light");
+    } else {
+      root.classList.remove("light");
+      root.classList.add("dark");
+    }
+  }
+
+  function getInitialTheme() {
+    const stored = window.localStorage.getItem(THEME_KEY);
+    if (stored === "light" || stored === "dark") return stored;
+
+    // Fallback to system preference
+    const prefersDark = window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return prefersDark ? "dark" : "light";
+  }
+
+  function initThemeToggle() {
+    const toggle = document.querySelector("[data-theme-toggle]");
+    const initial = getInitialTheme();
+    applyTheme(initial);
+
+    if (!toggle) return;
+
+    toggle.checked = initial === "dark";
+    toggle.addEventListener("change", () => {
+      const theme = toggle.checked ? "dark" : "light";
+      window.localStorage.setItem(THEME_KEY, theme);
+      applyTheme(theme);
+    });
+  }
+
+  /********************************************************************
+   * Attach to global namespace
+   ********************************************************************/
+
+  MYSTATS.toNumber = toNumber;
+  MYSTATS.parseCsv = parseCsv;
+  MYSTATS.groupBy = groupBy;
+  MYSTATS.sumBy = sumBy;
+  MYSTATS.avgBy = avgBy;
+  MYSTATS.slugify = slugify;
+
+  MYSTATS.applyTheme = applyTheme;
+  MYSTATS.initThemeToggle = initThemeToggle;
+
+  window.MYSTATS = MYSTATS;
+
+  // Auto-init theme once DOM is ready
+  document.addEventListener("DOMContentLoaded", () => {
+    initThemeToggle();
   });
-}
-
-// Automatically wire theme on every page that includes app.js
-function bootTheme() {
-  applyTheme();
-  initThemeToggle();
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", bootTheme);
-} else {
-  bootTheme();
-}
+})(window, document);
