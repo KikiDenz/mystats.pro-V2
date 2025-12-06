@@ -5,7 +5,7 @@
 // Uses the global utility functions attached to MYSTATS in app.js (e.g., MYSTATS.toNumber, MYSTATS.sumBy, MYSTATS.parseCsv)
 
 const PLAYER_SHEET =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fcSc3bth-xMxcjAXOCchbqLYQpObfOQvf8xJdpSkNl3I09OEwuvfWYehtQX5a6LQIeIFdsg/pub?output=csv";
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fcSc3bth-xMxcjAXOCchbqLYQpObfOQvf8xJdpSkNl3I09OEwuvfWYehtQX5a6LQIeIFdsg/pub";
 
 // Maps player slug to the gid of their stats sheet tab
 const PLAYER_GIDS = {

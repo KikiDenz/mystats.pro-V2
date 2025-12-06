@@ -15,7 +15,7 @@ const PLAYER_GIDS_REC = {
 };
 
 const PLAYER_SHEET_REC =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fcSc3bth-xMxcjAXOCchbqLYQpObfOQvf8xJdpSkNl3I09OEwuvfWYehtQX5a6LQIeIFdsg/pub?output=csv";
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fcSc3bth-xMxcjAXOCchbqLYQpObfOQvf8xJdpSkNl3I09OEwuvfWYehtQX5a6LQIeIFdsg/pub";
 
 async function fetchCSV(url) {
   const res = await fetch(url);

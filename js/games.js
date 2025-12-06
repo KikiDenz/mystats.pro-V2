@@ -8,7 +8,7 @@ const TEAM_GIDS_MAP = {
 };
 
 const GAMES_SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7JWjsx4iztJtf6PTOR6_adf9pdbtFlgIN8aX2_3QynveLtg427bYcDOOzIFpxEoNaMFYwaIFj12T/pub?output=csv";
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7JWjsx4iztJtf6PTOR6_adf9pdbtFlgIN8aX2_3QynveLtg427bYcDOOzIFpxEoNaMFYwaIFj12T/pub";
 
 async function fetchCSV(url) {
   const res = await fetch(url);
