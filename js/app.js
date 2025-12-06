@@ -1,1 +1,97 @@
-export function toNum(v){const n=parseFloat(v);return Number.isFinite(n)?n:0;} export function fmtNumber(v,d=1){return Number.isFinite(v)?v.toFixed(d):'0.0';} export function fmtPct(m,a){m=toNum(m);a=toNum(a);if(!a)return '—';return (100*m/a).toFixed(1);} export function parseCsv(t){const l=t.trim().split(/\r?\n/);if(!l.length)return[];const h=l[0].split(',').map(s=>s.trim());const rows=[];for(let i=1;i<l.length;i++){if(!l[i].trim())continue;const c=l[i].split(',').map(s=>s.trim());const r={};h.forEach((hh,idx)=>r[hh]=c[idx]??'');rows.push(r);}return rows;} export function getYearAndSeasonLabel(dateStr){if(!dateStr)return{year:null,seasonLabel:null};let d;if(/^\d{4}-\d{2}-\d{2}$/.test(dateStr)){d=new Date(dateStr+'T00:00:00');}else if(/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateStr)){const [dd,mm,yy]=dateStr.split('/').map(Number);d=new Date(yy,mm-1,dd);}else{d=new Date(dateStr);}if(Number.isNaN(d.getTime()))return{year:null,seasonLabel:null};const y=d.getFullYear();const m=d.getMonth()+1;let s='Summer';if(m>=3&&m<=5)s='Autumn';else if(m>=6&&m<=8)s='Winter';else if(m>=9&&m<=11)s='Spring';return{year:y,seasonLabel:`${y} ${s}`};}
+// --- number + CSV helpers ---
+
+export function toNum(v) {
+  const n = parseFloat(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+export function fmtNumber(v, decimals = 1) {
+  if (!Number.isFinite(v)) return "0.0";
+  return v.toFixed(decimals);
+}
+
+export function fmtPct(made, att) {
+  const m = toNum(made);
+  const a = toNum(att);
+  if (!a) return "—";
+  return (100 * m / a).toFixed(1);
+}
+
+// Very small CSV parser for our simple, comma-separated data
+export function parseCsv(text) {
+  const lines = text.trim().split(/\r?\n/);
+  if (!lines.length) return [];
+  const headers = lines[0].split(",").map(h => h.trim());
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const cols = lines[i].split(",").map(c => c.trim());
+    const row = {};
+    headers.forEach((h, idx) => {
+      row[h] = cols[idx] ?? "";
+    });
+    rows.push(row);
+  }
+  return rows;
+}
+
+// Map date string -> year + "Season" (Summer / Autumn / Winter / Spring)
+export function getYearAndSeasonLabel(dateStr) {
+  if (!dateStr) return { year: null, seasonLabel: null };
+  let d;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    d = new Date(dateStr + "T00:00:00");
+  } else if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateStr)) {
+    const [dd, mm, yyyy] = dateStr.split("/").map(Number);
+    d = new Date(yyyy, mm - 1, dd);
+  } else {
+    d = new Date(dateStr);
+  }
+
+  if (Number.isNaN(d.getTime())) {
+    return { year: null, seasonLabel: null };
+  }
+  const year = d.getFullYear();
+  const month = d.getMonth() + 1;
+
+  let season = "Summer";
+  if (month >= 3 && month <= 5) season = "Autumn";
+  else if (month >= 6 && month <= 8) season = "Winter";
+  else if (month >= 9 && month <= 11) season = "Spring";
+
+  return { year, seasonLabel: `${year} ${season}` };
+}
+
+// --- theme handling ---
+
+function applyTheme() {
+  const stored = localStorage.getItem("mystats_theme");
+  const theme = stored === "light" ? "light" : "dark";
+
+  document.documentElement.dataset.theme = theme;
+
+  const btn = document.querySelector("[data-theme-toggle]");
+  if (btn) {
+    btn.textContent = theme === "light" ? "☾" : "☀";
+  }
+}
+
+export function setupThemeToggle() {
+  applyTheme();
+  const btn = document.querySelector("[data-theme-toggle]");
+  if (!btn) return;
+
+  btn.addEventListener("click", () => {
+    const current = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+    localStorage.setItem("mystats_theme", current);
+    applyTheme();
+  });
+}
+
+// Auto-apply theme on load (so even pages that don't call setupThemeToggle get the right theme)
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", applyTheme);
+} else {
+  applyTheme();
+}
