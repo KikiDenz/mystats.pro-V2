@@ -147,7 +147,7 @@ async function loadPlayerStatsForTeam(team) {
     const gid = PLAYER_GIDS[slug];
     if (gid === undefined) continue;
 
-    const url = getCsvUrlForSheet(row);
+    const url = getCsvUrlForSheet(gid);
     const rows = await fetchCSV(url);
     results.push({ slug, rows });
   }
