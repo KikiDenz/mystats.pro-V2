@@ -51,7 +51,7 @@ async function loadPlayerStats(slug) {
   const gid = PLAYER_GIDS_MAP[slug];
   if (gid === undefined) return [];
 
-  const url = `${PLAYER_SHEET_URL}&gid=${gid}`;
+  const url = `${sheetUrl}?gid=${gid}&single=true&output=csv`;
   return await fetchCSV(url);
 }
 

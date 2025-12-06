@@ -44,7 +44,7 @@ async function loadGames(slug) {
   const gid = TEAM_GIDS_MAP[slug];
   if (gid === undefined) return [];
 
-  const url = `${GAMES_SHEET_URL}&gid=${gid}`;
+  const url = `${sheetUrl}?gid=${gid}&single=true&output=csv`;
   return fetchCSV(url);
 }
 

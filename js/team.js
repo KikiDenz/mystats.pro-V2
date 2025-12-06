@@ -122,7 +122,7 @@ async function loadPlayerStatsForTeam(team) {
     const gid = PLAYER_GIDS[slug];
     if (gid === undefined) continue;
 
-    const url = `${PLAYERS_SHEET}&gid=${gid}`;
+    const url = `${sheetUrl}?gid=${gid}&single=true&output=csv`;
     const rows = await fetchCSV(url);
     results.push({ slug, rows });
   }
@@ -136,7 +136,7 @@ async function loadGamesForTeam(slug) {
   const gid = TEAM_GIDS[slug];
   if (gid === undefined) return [];
 
-  const url = `${GAMES_SHEET}&gid=${gid}`;
+  const url = `${sheetUrl}?gid=${gid}&single=true&output=csv`;
   return await fetchCSV(url);
 }
 

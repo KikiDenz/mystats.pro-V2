@@ -59,7 +59,7 @@ async function loadPlayerRowsForTeam(team) {
     const gid = PLAYER_GIDS_LDR[slug];
     if (gid === undefined) continue;
 
-    const url = `${PLAYER_SHEET_LDR}&gid=${gid}`;
+    const url = `${sheetUrl}?gid=${gid}&single=true&output=csv`;
     const rows = await fetchCSV(url);
     results.push({ slug, rows });
   }
