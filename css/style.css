@@ -315,6 +315,17 @@ body {
   background: var(--accent-soft);
 }
 
+/* Mobile horizontal scrolling for wide tables */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+.table-scroll table {
+  min-width: 700px; /* Ensures columns don't shrink too small */
+}
+
 /* ---------- Player hero ---------- */
 
 .player-hero {
