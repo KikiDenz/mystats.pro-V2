@@ -42,16 +42,16 @@ export function parseCsv(text) {
       row[key] = cols[idx] ?? "";
     });
 
-    return rows;
+    rows.push(row);
   }
 
   return rows;
 }
 
-
 // Map date string -> year + "Season" label (Summer / Autumn / Winter / Spring)
 export function getYearAndSeasonLabel(dateStr) {
   if (!dateStr) return { year: null, seasonLabel: null };
+
   let d;
 
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
@@ -69,6 +69,7 @@ export function getYearAndSeasonLabel(dateStr) {
 
   const year = d.getFullYear();
   const month = d.getMonth() + 1;
+
   let season = "Summer";
   if (month >= 3 && month <= 5) season = "Autumn";
   else if (month >= 6 && month <= 8) season = "Winter";
@@ -82,7 +83,6 @@ export function getYearAndSeasonLabel(dateStr) {
 function applyTheme() {
   const stored = localStorage.getItem("mystats_theme");
   const theme = stored === "light" ? "light" : "dark"; // default dark
-
   document.documentElement.dataset.theme = theme;
 
   const btn = document.querySelector("[data-theme-toggle]");
