@@ -1,103 +1,65 @@
-{
-"kyle-denzin": {
-  "name": "Kyle Denzin",
-  "number": 37,
-  "position": "G/F",
-  "image": "kyle-denzin.png",
-  "team": "pretty-good",
-  "teams": [
-    "pretty-good"
-  ],
-  "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fCs3bth-xMxciqAX0CchbqLYOpQbfOQvf8xJdpSkNl3109OEwuvfWYehtQX5a6LUqeIFdsg/pub?gid=0&single=true&output=csv"
-},
-"levi-denzin": {
-  "name": "Levi Denzin",
-  "number": "43",
-  "position": "F",
-  "image": "levi-denzin.png",
-  "team": "pretty-good",
-  "teams": [
-    "pretty-good"
-  ],
-  "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fCs3bth-xMxciqAX0CchbqLYOpQbfOQvf8xJdpSkNl3109OEwuvfWYehtQX5a6LUqeIFdsg/pub?gid=2091114860&single=true&output=csv"
-},
-"findlay-wendtman": {
-  "name": "Findlay Wendtman",
-  "number": "28",
-  "position": "G",
-  "image": "findlay-wendtman.png",
-  "team": "pretty-good",
-  "teams": [
-    "pretty-good",
-    "chuckers-chuckers"
-  ],
-  "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fCs3bth-xMxciqAX0CchbqLYOpQbfOQvf8xJdpSkNl3109OEwuvfWYehtQX5a6LUqeIFdsg/pub?gid=863688176&single=true&output=csv"
-},
-"jackson-neaves": {
-  "name": "Jackson Neaves",
-  "number": "10",
-  "position": "C/F",
-  "image": "placeholder4.png",
-  "team": "pretty-good",
-  "teams": [
-    "pretty-good",
-    "chuckers-chuckers"
-  ],
-  "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fCs3bth-xMxciqAX0CchbqLYOpQbfOQvf8xJdpSkNl3109OEwuvfWYehtQX5a6LUqeIFdsg/pub?gid=699060431&single=true&output=csv"
-},
-"josh-todd": {
-  "name": "Josh Todd",
-  "number": "11",
-  "position": "F/C",
-  "image": "josh-todd.png",
-  "team": "pretty-good",
-  "teams": [
-    "pretty-good"
-  ],
-  "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fCs3bth-xMxciqAX0CchbqLYOpQbfOQvf8xJdpSkNl3109OEwuvfWYehtQX5a6LUqeIFdsg/pub?gid=2116571222&single=true&output=csv"
-},
-"rhys-ogle": {
-  "name": "Rhys Ogle",
-  "number": "6",
-  "position": "F",
-  "image": "placeholder7.png",
-  "team": "pretty-good",
-  "teams": [
-    "pretty-good"
-  ],
-  "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fCs3bth-xMxciqAX0CchbqLYOpQbfOQvf8xJdpSkNl3109OEwuvfWYehtQX5a6LUqeIFdsg/pub?gid=298458955&single=true&output=csv"
-},
-"jarren-owen": {
-  "name": "Jarren Owen",
-  "number": "5",
-  "position": "G",
-  "image": "placeholder5.png",
-  "team": "pretty-good",
-  "teams": [
-    "pretty-good"
-  ],
-  "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fCs3bth-xMxciqAX0CchbqLYOpQbfOQvf8xJdpSkNl3109OEwuvfWYehtQX5a6LUqeIFdsg/pub?gid=1191745424&single=true&output=csv"
-},
-"callan-beamish": {
-  "name": "Callan Beamish",
-  "number": "21",
-  "position": "C/F",
-  "image": "placeholder3.png",
-  "team": "pretty-good",
-  "teams": [
-    "pretty-good"
-  ],
-  "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fCs3bth-xMxciqAX0CchbqLYOpQbfOQvf8xJdpSkNl3109OEwuvfWYehtQX5a6LUqeIFdsg/pub?gid=430866216&single=true&output=csv"
-},
-"ethan-todd": {
-  "name": "Ethan Todd",
-  "number": "27",
-  "position": "G",
-  "image": "placeholder6.png",
-  "team": "pretty-good",
-  "teams": [
-    "pretty-good"
-  ],
-  "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fCs3bth-xMxciqAX0CchbqLYOpQbfOQvf8xJdpSkNl3109OEwuvfWYehtQX5a6LUqeIFdsg/pub?gid=450610169&single=true&output=csv"
-}
-}
+[
+  {
+    "name": "Kyle Denzin",
+    "slug": "kyle-denzin",
+    "image": "assets/players/kyle-denzin.png",
+    "position": "G/F",
+    "number": 37
+  },
+  {
+    "name": "Levi Denzin",
+    "slug": "levi-denzin",
+    "image": "assets/players/levi-denzin.png",
+    "position": "G",
+    "number": 43
+  },
+  {
+    "name": "Findlay Wendtman",
+    "slug": "findlay-wendtman",
+    "image": "assets/players/findlay-wendtman.png",
+    "position": "F",
+    "number": 28
+  },
+  {
+    "name": "Jackson Neaves",
+    "slug": "jackson-neaves",
+    "image": "assets/players/jackson-neaves.png",
+    "position": "G",
+    "number": 15
+  },
+  {
+    "name": "Ethan Todd",
+    "slug": "ethan-todd",
+    "image": "assets/players/ethan-todd.png",
+    "position": "G",
+    "number": 7
+  },
+  {
+    "name": "Josh Todd",
+    "slug": "josh-todd",
+    "image": "assets/players/josh-todd.png",
+    "position": "F",
+    "number": 24
+  },
+  {
+    "name": "Callan Beamish",
+    "slug": "callan-beamish",
+    "image": "assets/players/callan-beamish.png",
+    "position": "C",
+    "number": 11
+  },
+  {
+    "name": "Jarren Owen",
+    "slug": "jarren-owen",
+    "image": "assets/players/jarren-owen.png",
+    "position": "G",
+    "number": 5
+  },
+  {
+    "name": "Rhys Ogle",
+    "slug": "rhys-ogle",
+    "image": "assets/players/rhys-ogle.png",
+    "position": "F",
+    "number": 14
+  }
+]
