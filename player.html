@@ -1,68 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Player — mystats.pro</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="css/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player | mystats.pro</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="page-player">
-  <header class="site-header">
-    <div class="site-header__brand">
-      <a href="index.html" class="brand-link">mystats.pro</a>
-      <span class="brand-tagline">Pretty Good Basketball Team stats</span>
+<body>
+
+<header class="site-header">
+    <a href="index.html" class="back-button">← Home</a>
+    <button id="theme-toggle" class="theme-toggle">🌓</button>
+</header>
+
+<section class="player-header">
+    <img id="player-image" class="player-photo" src="">
+    <div class="player-info">
+        <h1 id="player-name"></h1>
+        <p id="player-meta"></p>
     </div>
-    <div class="site-header__actions">
-      <button type="button" class="theme-toggle" data-theme-toggle>☾</button>
-    </div>
-  </header>
-  <main class="page-player__main">
-    <section class="player-hero" id="player-hero"></section>
-    <section class="player-controls">
-      <div class="player-controls__row">
-        <label for="player-season-select">Season</label>
-        <select id="player-season-select"></select>
-      </div>
-      <div class="player-controls__tabs">
-        <button class="tab-button tab-button--active" data-phase="regular">Regular season</button>
-        <button class="tab-button" data-phase="playoff">Playoffs</button>
-        <button class="tab-button" data-phase="all">Career (all)</button>
-      </div>
-    </section>
-    <section class="player-section">
-      <h2>Season averages</h2>
-      <div class="table-wrapper table-wrapper--scroll">
-        <table class="stat-table" id="player-season-table">
-          <thead>
+</section>
+
+<section class="player-filters">
+    <label>Season:
+        <select id="player-season-filter"></select>
+    </label>
+
+    <label>Phase:
+        <select id="player-phase-filter">
+            <option value="all">All</option>
+            <option value="regular">Regular</option>
+            <option value="playoff">Playoffs</option>
+        </select>
+    </label>
+</section>
+
+<section class="player-averages">
+    <h2>Season Averages</h2>
+    <table class="stat-table">
+        <thead>
             <tr>
-              <th>Season</th><th>GP</th><th>MIN</th><th>PTS</th><th>REB</th><th>AST</th>
-              <th>STL</th><th>BLK</th><th>FG%</th><th>3P%</th><th>FT%</th>
+                <th>GP</th>
+                <th>PTS</th>
+                <th>REB</th>
+                <th>OREB</th>
+                <th>DREB</th>
+                <th>AST</th>
+                <th>STL</th>
+                <th>BLK</th>
+                <th>TO</th>
+                <th>FG%</th>
+                <th>3P%</th>
+                <th>FT%</th>
             </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-    <section class="player-section">
-      <h2>Game log</h2>
-      <div class="table-wrapper table-wrapper--scroll">
-        <table class="stat-table" id="player-gamelog-table">
-          <thead>
+        </thead>
+        <tbody id="player-averages-body"></tbody>
+    </table>
+</section>
+
+<section class="player-games">
+    <h2>Game Log</h2>
+    <table class="stat-table scroll-x">
+        <thead>
             <tr>
-              <th>Date</th><th>Season</th><th>Phase</th><th>Opponent</th><th>Result</th>
-              <th>MIN</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th>
-              <th>FG</th><th>3P</th><th>FT</th>
+                <th>Date</th>
+                <th>Opponent</th>
+                <th>PTS</th>
+                <th>REB</th>
+                <th>AST</th>
+                <th>STL</th>
+                <th>BLK</th>
+                <th>TO</th>
+                <th>FG</th>
+                <th>3P</th>
+                <th>FT</th>
+                <th>Phase</th>
             </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </section>
-  </main>
-  <footer class="site-footer">
-    <span>Built for the Pretty Good Basketball Team 🏀</span>
-  </footer>
-  <script type="module" src="js/app.js"></script>
-  <script type="module" src="js/player.js"></script>
+        </thead>
+        <tbody id="player-games-body"></tbody>
+    </table>
+</section>
+
+<script src="app.js"></script>
+<script src="player.js"></script>
+
 </body>
 </html>

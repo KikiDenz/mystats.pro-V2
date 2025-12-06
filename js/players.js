@@ -1,396 +1,234 @@
-// js/player.js
+/* --------------------------------------------------
+   mystats.pro V2.5 — PLAYER PAGE ENGINE
+-------------------------------------------------- */
 
-import {
-  toNum,
-  fmtNumber,
-  fmtPct,
-  parseCsv,
-  getYearAndSeasonLabel,
-} from "./app.js";
+const PLAYER_GIDS_MAP = {
+  "kyle-denzin": 0,
+  "levi-denzin": 2091114860,
+  "findlay-wendtman": 863688176,
+  "jackson-neaves": 699060431,
+  "ethan-todd": 450610169,
+  "josh-todd": 2116571222,
+  "callan-beamish": 430866216,
+  "jarren-owen": 1191745424,
+  "rhys-ogle": 298458955
+};
 
-function log(...args) {
-  console.log("[player]", ...args);
-}
+const PLAYER_SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQsO8Qs1fcSc3bth-xMxcjAXOCchbqLYQpObfOQvf8xJdpSkNl3I09OEwuvfWYehtQX5a6LQIeIFdsg/pub?output=csv";
 
-// ---------- small helpers ----------
-
-function getQueryParam(name) {
-  const params = new URLSearchParams(window.location.search);
-  return params.get(name);
-}
-
-async function loadJSON(path) {
-  const res = await fetch(path);
-  if (!res.ok) throw new Error(`Failed to load ${path}`);
-  return await res.json();
-}
-
-async function loadCsv(path) {
-  const res = await fetch(path);
-  if (!res.ok) throw new Error(`Failed to load CSV ${path}`);
+async function fetchCSV(url) {
+  const res = await fetch(url);
   const text = await res.text();
-  return parseCsv(text);
+  return parseCSV(text);
 }
 
-function pick(row, ...keys) {
-  for (const k of keys) {
-    if (row[k] !== undefined && row[k] !== "") return row[k];
-  }
-  return "";
-}
+function parseCSV(raw) {
+  const lines = raw.replace(/\r/g, "").split("\n");
+  const headers = lines.shift().split(",");
 
-function seasonWeight(label) {
-  if (!label) return 0;
-  const parts = label.split(" ");
-  if (parts.length < 2) return 0;
-  const year = parseInt(parts[0], 10) || 0;
-  const season = parts[1];
-  const orderMap = { Summer: 1, Autumn: 2, Winter: 3, Spring: 4 };
-  const ord = orderMap[season] || 0;
-  return year * 10 + ord;
-}
-
-// ---------- build game objects for one player ----------
-
-function buildGameRecords(playerId, playerName, rows) {
-  const games = [];
-
-  for (const row of rows) {
-    const dateStr = pick(row, "date", "gamedate");
-    const opponent = pick(row, "opponent", "opp");
-    const result = pick(row, "result");
-
-    const seasonOverride = pick(row, "season", "seasonlabel");
-    const { year, seasonLabel: inferredSeason } = getYearAndSeasonLabel(
-      dateStr
-    );
-    const seasonLabel = seasonOverride || inferredSeason;
-
-    const phaseRaw = (pick(row, "phase", "playoff", "playoffs") || "")
-      .toString()
-      .toLowerCase();
-    let phase = "regular";
-    if (["p", "y", "yes", "true", "playoff", "playoffs"].includes(phaseRaw)) {
-      phase = "playoffs";
-    }
-
-    const min = toNum(pick(row, "min", "mins", "minutes"));
-
-    const fgMade = toNum(pick(row, "fgm", "fg", "fieldgoalsmade"));
-    const fgAtt = toNum(pick(row, "fga", "fieldgoalsattempted"));
-
-    const threeMade = toNum(pick(row, "3pm", "3p", "threemade"));
-    const threeAtt = toNum(pick(row, "3pa", "threeatt", "3ptattempts"));
-
-    const ftMade = toNum(pick(row, "ftm", "ft", "freethrowsmade"));
-    const ftAtt = toNum(pick(row, "fta", "freethrowsattempted"));
-
-    const oreb = toNum(pick(row, "or", "oreb", "offreb", "offensiverebounds"));
-    const dreb = toNum(pick(row, "dr", "dreb", "defreb", "defensiverebounds"));
-
-    let reb = toNum(pick(row, "totrb", "trb", "reb", "reboundstotal"));
-    if (!reb && (oreb || dreb)) reb = oreb + dreb;
-
-    const ast = toNum(pick(row, "ast", "ass", "assists"));
-    const stl = toNum(pick(row, "stl", "st", "steals"));
-    const blk = toNum(pick(row, "blk", "bs", "blocks"));
-    const tov = toNum(pick(row, "to", "tov", "turnovers"));
-    const pts = toNum(pick(row, "pts", "points"));
-
-    games.push({
-      playerId,
-      playerName,
-      date: dateStr,
-      opponent,
-      result,
-      seasonLabel,
-      year,
-      phase,
-      min,
-      pts,
-      reb,
-      oreb,
-      dreb,
-      ast,
-      stl,
-      blk,
-      tov,
-      fgMade,
-      fgAtt,
-      threeMade,
-      threeAtt,
-      ftMade,
-      ftAtt,
+  return lines
+    .filter((l) => l.trim().length > 0)
+    .map((line) => {
+      const cols = line.split(",");
+      const row = {};
+      headers.forEach((h, i) => (row[h] = cols[i]));
+      return row;
     });
-  }
-
-  return games;
 }
 
-// ---------- filtering & season helpers ----------
-
-function getSeasonOptions(games) {
-  const labels = new Set();
-  for (const g of games) {
-    if (g.seasonLabel) labels.add(g.seasonLabel);
-  }
-  const arr = Array.from(labels);
-  arr.sort((a, b) => seasonWeight(a) - seasonWeight(b));
-  return arr;
+function getPlayerSlug() {
+  const url = new URL(window.location.href);
+  return url.searchParams.get("player");
 }
 
-function filterGamesBySeason(games, seasonLabel) {
-  if (!seasonLabel || seasonLabel === "all") return games;
-  return games.filter((g) => g.seasonLabel === seasonLabel);
+async function loadPlayersJSON() {
+  const res = await fetch("data/players.json");
+  return res.json();
 }
 
-function filterGamesByMode(games, mode) {
-  if (mode === "regular") {
-    return games.filter((g) => g.phase === "regular");
-  }
-  if (mode === "playoffs") {
-    return games.filter((g) => g.phase === "playoffs");
-  }
-  return games;
+async function loadPlayerStats(slug) {
+  const gid = PLAYER_GIDS_MAP[slug];
+  if (gid === undefined) return [];
+
+  const url = `${PLAYER_SHEET_URL}&gid=${gid}`;
+  return await fetchCSV(url);
 }
 
-// ---------- rendering ----------
-
-function renderSeasonSelect(selectEl, seasonOptions) {
-  if (!selectEl) return;
-  selectEl.innerHTML =
-    `<option value="all">All seasons</option>` +
-    seasonOptions.map((label) => `<option value="${label}">${label}</option>`).join(
-      ""
-    );
+function extractSeasons(rows) {
+  const seasons = [...new Set(rows.map((r) => r.season))].filter((s) => s);
+  return seasons.sort();
 }
 
-function computeSeasonLine(label, games) {
-  if (!games.length) {
-    return {
-      label,
-      gp: 0,
-      min: 0,
-      pts: 0,
-      reb: 0,
-      ast: 0,
-      stl: 0,
-      blk: 0,
-      fgPct: "—",
-      threePct: "—",
-      ftPct: "—",
-    };
-  }
+function filterRows(rows, season, phase) {
+  return rows.filter((r) => {
+    const okSeason = season === "all" || r.season === season;
+    const okPhase = phase === "all" || r.phase === phase;
+    return okSeason && okPhase;
+  });
+}
 
-  const agg = {
-    gp: 0,
-    min: 0,
+function computeAverages(rows) {
+  if (rows.length === 0) return null;
+
+  const sum = {
+    gp: rows.length,
     pts: 0,
     reb: 0,
+    oreb: 0,
+    dreb: 0,
     ast: 0,
     stl: 0,
     blk: 0,
-    fgMade: 0,
-    fgAtt: 0,
-    threeMade: 0,
-    threeAtt: 0,
-    ftMade: 0,
-    ftAtt: 0,
+    to: 0,
+    fg: [],
+    tp: [],
+    ft: [],
   };
 
-  for (const g of games) {
-    agg.gp += 1;
-    agg.min += g.min;
-    agg.pts += g.pts;
-    agg.reb += g.reb;
-    agg.ast += g.ast;
-    agg.stl += g.stl;
-    agg.blk += g.blk;
-    agg.fgMade += g.fgMade;
-    agg.fgAtt += g.fgAtt;
-    agg.threeMade += g.threeMade;
-    agg.threeAtt += g.threeAtt;
-    agg.ftMade += g.ftMade;
-    agg.ftAtt += g.ftAtt;
-  }
+  rows.forEach((r) => {
+    sum.pts += Number(r.pts || 0);
+    sum.reb += Number(r.totrb || 0);
+    sum.oreb += Number(r.or || 0);
+    sum.dreb += Number(r.dr || 0);
+    sum.ast += Number(r.ass || 0);
+    sum.stl += Number(r.st || 0);
+    sum.blk += Number(r.bs || 0);
+    sum.to += Number(r.to || 0);
 
-  const gp = agg.gp || 1;
+    // Track shooting attempts/makes
+    if (r.fg && r.fga) sum.fg.push([Number(r.fg), Number(r.fga)]);
+    if (r["3p"] && r["3pa"]) sum.tp.push([Number(r["3p"]), Number(r["3pa"])]);
+    if (r.ft && r.fta) sum.ft.push([Number(r.ft), Number(r.fta)]);
+  });
+
+  const pct = (arr) => {
+    const made = arr.reduce((a, b) => a + b[0], 0);
+    const att = arr.reduce((a, b) => a + b[1], 0);
+    return att === 0 ? 0 : (made / att) * 100;
+  };
 
   return {
-    label,
-    gp: agg.gp,
-    min: agg.min / gp,
-    pts: agg.pts / gp,
-    reb: agg.reb / gp,
-    ast: agg.ast / gp,
-    stl: agg.stl / gp,
-    blk: agg.blk / gp,
-    fgPct: fmtPct(agg.fgMade, agg.fgAtt),
-    threePct: fmtPct(agg.threeMade, agg.threeAtt),
-    ftPct: fmtPct(agg.ftMade, agg.ftAtt),
+    gp: sum.gp,
+    pts: (sum.pts / sum.gp).toFixed(1),
+    reb: (sum.reb / sum.gp).toFixed(1),
+    oreb: (sum.oreb / sum.gp).toFixed(1),
+    dreb: (sum.dreb / sum.gp).toFixed(1),
+    ast: (sum.ast / sum.gp).toFixed(1),
+    stl: (sum.stl / sum.gp).toFixed(1),
+    blk: (sum.blk / sum.gp).toFixed(1),
+    to: (sum.to / sum.gp).toFixed(1),
+    fg: pct(sum.fg).toFixed(1),
+    tp: pct(sum.tp).toFixed(1),
+    ft: pct(sum.ft).toFixed(1),
   };
 }
 
-function renderSeasonAverages(tbody, seasonLabel, games) {
-  if (!tbody) return;
-  const line = computeSeasonLine(
-    seasonLabel === "all" ? "All seasons" : seasonLabel,
-    games
-  );
+function renderAverages(avg) {
+  const body = document.getElementById("player-averages-body");
+  body.innerHTML = "";
 
-  tbody.innerHTML = `
-    <tr>
-      <td>${line.label}</td>
-      <td>${line.gp}</td>
-      <td>${fmtNumber(line.min, 1)}</td>
-      <td>${fmtNumber(line.pts, 1)}</td>
-      <td>${fmtNumber(line.reb, 1)}</td>
-      <td>${fmtNumber(line.ast, 1)}</td>
-      <td>${fmtNumber(line.stl, 1)}</td>
-      <td>${fmtNumber(line.blk, 1)}</td>
-      <td>${line.fgPct}</td>
-      <td>${line.threePct}</td>
-      <td>${line.ftPct}</td>
-    </tr>
+  if (!avg) {
+    body.innerHTML = "<tr><td colspan='12'>No games this season.</td></tr>";
+    return;
+  }
+
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${avg.gp}</td>
+    <td>${avg.pts}</td>
+    <td>${avg.reb}</td>
+    <td>${avg.oreb}</td>
+    <td>${avg.dreb}</td>
+    <td>${avg.ast}</td>
+    <td>${avg.stl}</td>
+    <td>${avg.blk}</td>
+    <td>${avg.to}</td>
+    <td>${avg.fg}%</td>
+    <td>${avg.tp}%</td>
+    <td>${avg.ft}%</td>
   `;
+  body.appendChild(tr);
 }
 
-function renderGameLog(tbody, games) {
-  if (!tbody) return;
+function renderGameLog(rows) {
+  const body = document.getElementById("player-games-body");
+  body.innerHTML = "";
 
-  const sorted = [...games].sort((a, b) => {
-    const da = new Date(a.date);
-    const db = new Date(b.date);
-    return da - db;
+  rows.forEach((r) => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${r.date}</td>
+      <td>${r.opponent}</td>
+      <td>${r.pts}</td>
+      <td>${r.totrb}</td>
+      <td>${r.ass}</td>
+      <td>${r.st}</td>
+      <td>${r.bs}</td>
+      <td>${r.to}</td>
+      <td>${r.fg}/${r.fga}</td>
+      <td>${r["3p"]}/${r["3pa"]}</td>
+      <td>${r.ft}/${r.fta}</td>
+      <td>${r.phase}</td>
+    `;
+
+    tr.addEventListener("click", () => {
+      if (r.game_id) {
+        window.location.href = `boxscore.html?game_id=${r.game_id}`;
+      }
+    });
+
+    body.appendChild(tr);
   });
-
-  tbody.innerHTML = sorted
-    .map((g) => {
-      const phaseLabel = g.phase === "playoffs" ? "Playoffs" : "Regular";
-      const fgLine = g.fgAtt ? `${g.fgMade}-${g.fgAtt}` : "";
-      const threeLine = g.threeAtt ? `${g.threeMade}-${g.threeAtt}` : "";
-      const ftLine = g.ftAtt ? `${g.ftMade}-${g.ftAtt}` : "";
-
-      return `
-        <tr>
-          <td>${g.date || ""}</td>
-          <td>${g.seasonLabel || ""}</td>
-          <td>${phaseLabel}</td>
-          <td>${g.opponent || ""}</td>
-          <td>${g.result || ""}</td>
-          <td>${g.min || ""}</td>
-          <td>${g.pts || ""}</td>
-          <td>${g.reb || ""}</td>
-          <td>${g.ast || ""}</td>
-          <td>${g.stl || ""}</td>
-          <td>${g.blk || ""}</td>
-          <td>${fgLine}</td>
-          <td>${threeLine}</td>
-          <td>${ftLine}</td>
-        </tr>
-      `;
-    })
-    .join("");
 }
 
-// ---------- main init ----------
+// ========== INITIALIZE PAGE ==========
 
 async function initPlayerPage() {
-  const playerId = getQueryParam("player");
-  log("initPlayerPage, playerId =", playerId);
-
-  if (!playerId) {
-    log("No ?player= in URL; aborting.");
-    return;
-  }
-
-  const seasonSelect = document.getElementById("player-season-select");
-  const averagesBody = document.querySelector(
-    "#player-averages-table tbody"
-  );
-  const logBody = document.querySelector("#player-gamelog-table tbody");
-  const modeButtons = document.querySelectorAll("[data-player-mode]");
-
-  const players = await loadJSON("data/players.json");
-  const player = players[playerId];
-
-  log("Loaded players.json, found player:", player);
+  const slug = getPlayerSlug();
+  const players = await loadPlayersJSON();
+  const player = players.find((p) => p.slug === slug);
 
   if (!player) {
-    if (averagesBody) {
-      averagesBody.innerHTML =
-        "<tr><td colspan='11'>Player not found.</td></tr>";
-    }
+    console.error("Player not found:", slug);
     return;
   }
 
-  const csvPath = player.csv || player.csvUrl;
-  log("CSV path for player:", csvPath);
+  // Render header
+  document.getElementById("player-image").src = player.image;
+  document.getElementById("player-name").textContent = player.name;
+  document.getElementById("player-meta").textContent = `${player.position} • #${player.number}`;
 
-  if (!csvPath) {
-    log("No CSV configured for player, giving up.");
-    return;
-  }
+  // Load stats
+  const rows = await loadPlayerStats(slug);
 
-  let rows = [];
-  try {
-    rows = await loadCsv(csvPath);
-    log("Loaded CSV rows:", rows.length);
-  } catch (err) {
-    console.error("Error loading CSV for player", playerId, err);
-  }
-
-  const allGames = buildGameRecords(playerId, player.name, rows);
-  log("Built game records:", allGames.length);
-
-  const seasonOptions = getSeasonOptions(allGames);
-  log("Season options:", seasonOptions);
-
-  renderSeasonSelect(seasonSelect, seasonOptions);
-
-  let currentSeason = "all";
-  let currentMode = "regular";
-
-  function refresh() {
-    let filtered = filterGamesBySeason(allGames, currentSeason);
-    filtered = filterGamesByMode(filtered, currentMode);
-
-    log("Refresh -> season:", currentSeason, "mode:", currentMode, "games:", filtered.length);
-
-    renderSeasonAverages(averagesBody, currentSeason, filtered);
-    renderGameLog(logBody, filtered);
-  }
-
-  if (seasonSelect) {
-    seasonSelect.addEventListener("change", () => {
-      currentSeason = seasonSelect.value || "all";
-      refresh();
-    });
-  }
-
-  modeButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const mode = btn.dataset.playerMode;
-      if (!mode) return;
-
-      currentMode = mode;
-
-      modeButtons.forEach((b) =>
-        b.classList.toggle(
-          "segmented-control__button--active",
-          b === btn
-        )
-      );
-
-      refresh();
-    });
+  // Seasons list
+  const seasons = extractSeasons(rows);
+  const seasonDropdown = document.getElementById("player-season-filter");
+  seasonDropdown.innerHTML = `<option value="all">All</option>`;
+  seasons.forEach((s) => {
+    const opt = document.createElement("option");
+    opt.value = s;
+    opt.textContent = s;
+    seasonDropdown.appendChild(opt);
   });
 
-  refresh();
+  function applyFilters() {
+    const season = seasonDropdown.value;
+    const phase = document.getElementById("player-phase-filter").value;
+
+    const filtered = filterRows(rows, season, phase);
+    renderAverages(computeAverages(filtered));
+    renderGameLog(filtered);
+  }
+
+  seasonDropdown.addEventListener("change", applyFilters);
+  document
+    .getElementById("player-phase-filter")
+    .addEventListener("change", applyFilters);
+
+  applyFilters();
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initPlayerPage);
-} else {
-  initPlayerPage();
-}
+initPlayerPage();
