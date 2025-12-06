@@ -8,6 +8,10 @@ import {
   getYearAndSeasonLabel,
 } from "./app.js";
 
+function log(...args) {
+  console.log("[player]", ...args);
+}
+
 // ---------- small helpers ----------
 
 function getQueryParam(name) {
@@ -52,22 +56,17 @@ function buildGameRecords(playerId, playerName, rows) {
   const games = [];
 
   for (const row of rows) {
-    // Column names normalised by parseCsv: lowercase, no spaces
     const dateStr = pick(row, "date", "gamedate");
     const opponent = pick(row, "opponent", "opp");
     const result = pick(row, "result");
 
-    // Optional explicit season label (e.g. "2025 Summer"), otherwise infer from date
     const seasonOverride = pick(row, "season", "seasonlabel");
     const { year, seasonLabel: inferredSeason } = getYearAndSeasonLabel(
       dateStr
     );
     const seasonLabel = seasonOverride || inferredSeason;
 
-    // Phase / playoff flag
-    const phaseRaw = (
-      pick(row, "phase", "playoff", "playoffs") || ""
-    )
+    const phaseRaw = (pick(row, "phase", "playoff", "playoffs") || "")
       .toString()
       .toLowerCase();
     let phase = "regular";
@@ -75,7 +74,6 @@ function buildGameRecords(playerId, playerName, rows) {
       phase = "playoffs";
     }
 
-    // Stats
     const min = toNum(pick(row, "min", "mins", "minutes"));
 
     const fgMade = toNum(pick(row, "fgm", "fg", "fieldgoalsmade"));
@@ -87,12 +85,8 @@ function buildGameRecords(playerId, playerName, rows) {
     const ftMade = toNum(pick(row, "ftm", "ft", "freethrowsmade"));
     const ftAtt = toNum(pick(row, "fta", "freethrowsattempted"));
 
-    const oreb = toNum(
-      pick(row, "or", "oreb", "offreb", "offensiverebounds")
-    );
-    const dreb = toNum(
-      pick(row, "dr", "dreb", "defreb", "defensiverebounds")
-    );
+    const oreb = toNum(pick(row, "or", "oreb", "offreb", "offensiverebounds"));
+    const dreb = toNum(pick(row, "dr", "dreb", "defreb", "defensiverebounds"));
 
     let reb = toNum(pick(row, "totrb", "trb", "reb", "reboundstotal"));
     if (!reb && (oreb || dreb)) reb = oreb + dreb;
@@ -111,7 +105,7 @@ function buildGameRecords(playerId, playerName, rows) {
       result,
       seasonLabel,
       year,
-      phase, // "regular" or "playoffs"
+      phase,
       min,
       pts,
       reb,
@@ -157,34 +151,13 @@ function filterGamesByMode(games, mode) {
   if (mode === "playoffs") {
     return games.filter((g) => g.phase === "playoffs");
   }
-  // career (all)
   return games;
 }
 
 // ---------- rendering ----------
 
-function renderHero(playerHeroEl, player) {
-  const img = player.image
-    ? `assets/${player.image}`
-    : "assets/placeholder-player.png";
-
-  const number = player.number ? `#${player.number} · ` : "";
-  const pos = player.position || "";
-
-  playerHeroEl.innerHTML = `
-    <div class="hero-card hero-card--player">
-      <div class="hero-card__avatar">
-        <img src="${img}" alt="${player.name}" />
-      </div>
-      <div class="hero-card__meta">
-        <h1 class="hero-card__title">${player.name}</h1>
-        <p class="hero-card__subtitle">${number}${pos}</p>
-      </div>
-    </div>
-  `;
-}
-
 function renderSeasonSelect(selectEl, seasonOptions) {
+  if (!selectEl) return;
   selectEl.innerHTML =
     `<option value="all">All seasons</option>` +
     seasonOptions.map((label) => `<option value="${label}">${label}</option>`).join(
@@ -259,6 +232,7 @@ function computeSeasonLine(label, games) {
 }
 
 function renderSeasonAverages(tbody, seasonLabel, games) {
+  if (!tbody) return;
   const line = computeSeasonLine(
     seasonLabel === "all" ? "All seasons" : seasonLabel,
     games
@@ -282,6 +256,8 @@ function renderSeasonAverages(tbody, seasonLabel, games) {
 }
 
 function renderGameLog(tbody, games) {
+  if (!tbody) return;
+
   const sorted = [...games].sort((a, b) => {
     const da = new Date(a.date);
     const db = new Date(b.date);
@@ -291,7 +267,6 @@ function renderGameLog(tbody, games) {
   tbody.innerHTML = sorted
     .map((g) => {
       const phaseLabel = g.phase === "playoffs" ? "Playoffs" : "Regular";
-
       const fgLine = g.fgAtt ? `${g.fgMade}-${g.fgAtt}` : "";
       const threeLine = g.threeAtt ? `${g.threeMade}-${g.threeAtt}` : "";
       const ftLine = g.ftAtt ? `${g.ftMade}-${g.ftAtt}` : "";
@@ -322,8 +297,13 @@ function renderGameLog(tbody, games) {
 
 async function initPlayerPage() {
   const playerId = getQueryParam("player");
+  log("initPlayerPage, playerId =", playerId);
 
-  const playerHeroEl = document.getElementById("player-hero");
+  if (!playerId) {
+    log("No ?player= in URL; aborting.");
+    return;
+  }
+
   const seasonSelect = document.getElementById("player-season-select");
   const averagesBody = document.querySelector(
     "#player-averages-table tbody"
@@ -331,35 +311,40 @@ async function initPlayerPage() {
   const logBody = document.querySelector("#player-gamelog-table tbody");
   const modeButtons = document.querySelectorAll("[data-player-mode]");
 
-  if (!playerId || !playerHeroEl) return;
-
   const players = await loadJSON("data/players.json");
   const player = players[playerId];
 
+  log("Loaded players.json, found player:", player);
+
   if (!player) {
-    playerHeroEl.innerHTML = `<p>Player not found.</p>`;
+    if (averagesBody) {
+      averagesBody.innerHTML =
+        "<tr><td colspan='11'>Player not found.</td></tr>";
+    }
     return;
   }
 
-  // render hero card
-  renderHero(playerHeroEl, player);
-
-  // load this player's CSV
   const csvPath = player.csv || player.csvUrl;
+  log("CSV path for player:", csvPath);
+
   if (!csvPath) {
-    console.warn("No CSV configured for player", playerId);
+    log("No CSV configured for player, giving up.");
     return;
   }
 
   let rows = [];
   try {
     rows = await loadCsv(csvPath);
+    log("Loaded CSV rows:", rows.length);
   } catch (err) {
     console.error("Error loading CSV for player", playerId, err);
   }
 
   const allGames = buildGameRecords(playerId, player.name, rows);
+  log("Built game records:", allGames.length);
+
   const seasonOptions = getSeasonOptions(allGames);
+  log("Season options:", seasonOptions);
 
   renderSeasonSelect(seasonSelect, seasonOptions);
 
@@ -370,14 +355,18 @@ async function initPlayerPage() {
     let filtered = filterGamesBySeason(allGames, currentSeason);
     filtered = filterGamesByMode(filtered, currentMode);
 
+    log("Refresh -> season:", currentSeason, "mode:", currentMode, "games:", filtered.length);
+
     renderSeasonAverages(averagesBody, currentSeason, filtered);
     renderGameLog(logBody, filtered);
   }
 
-  seasonSelect.addEventListener("change", () => {
-    currentSeason = seasonSelect.value || "all";
-    refresh();
-  });
+  if (seasonSelect) {
+    seasonSelect.addEventListener("change", () => {
+      currentSeason = seasonSelect.value || "all";
+      refresh();
+    });
+  }
 
   modeButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -387,14 +376,16 @@ async function initPlayerPage() {
       currentMode = mode;
 
       modeButtons.forEach((b) =>
-        b.classList.toggle("segmented-control__button--active", b === btn)
+        b.classList.toggle(
+          "segmented-control__button--active",
+          b === btn
+        )
       );
 
       refresh();
     });
   });
 
-  // initial render
   refresh();
 }
 
